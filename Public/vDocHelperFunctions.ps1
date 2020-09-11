@@ -355,7 +355,9 @@ function Get-vDocVMHostHardware {
             } #END if
 
             $Inventory.GetPlatform($hostHardware.Manufacturer, $hostHardware.Model, $hostHardware.SerialNumber)
-            $biosDate = (Get-Date $vmhostView.Hardware.BiosInfo.ReleaseDate).ToShortDateString()
+            if ($vmhostView.Hardware.BiosInfo.ReleaseDate) {
+                $biosDate = (Get-Date $vmhostView.Hardware.BiosInfo.ReleaseDate).ToShortDateString()
+            } #END if
             $Inventory.GetBios($hostHardware.BiosVersion, $biosDate)
             $Inventory.GetCpu($hostHardware.CpuCount, $hostHardware.CpuCoreCountTotal, $hostHardware.MhzPerCpu)
             $Inventory.'Memory Slots Count' = $hostHardware.MemorySlotCount
@@ -381,7 +383,9 @@ function Get-vDocVMHostHardware {
                 Write-vDocMessage -Message "Gathering hardware BIOS details..." -Type Verbose
                 $esxBios = @{}
                 $esxBios.biosVersion = $vmhostView.Hardware.BiosInfo.BiosVersion
-                $esxBios.biosReleaseDate = (Get-Date $vmhostView.Hardware.BiosInfo.ReleaseDate).ToShortDateString()
+                if ($vmhostView.Hardware.BiosInfo.ReleaseDate) {
+                    $esxBios.biosReleaseDate = (Get-Date $vmhostView.Hardware.BiosInfo.ReleaseDate).ToShortDateString()
+                } #END if
                 $Inventory.GetBios($esxBios.biosVersion, $esxBios.biosReleaseDate)
                 $Inventory.'Memory Slots Count' = $esxSdrRam.count
                 $Inventory.'Power Supplies' = $esxPsu.Count
@@ -443,21 +447,22 @@ function Get-vDocVMHostHardware {
                 Write-vDocMessage -Message "Gathering hardware PSU details..." -Type Verbose
                 $esxIpmiFru = $esxCli.hardware.ipmi.fru.list.invoke()
                 $esxPsu = $esxIpmiFru | Where-Object { $_.PartName -match 'PWR SPLY' }
-                if ($esxPsu) {
-                    $Inventory.'Power Supplies' = $esxPsu.Count
-                }
-                else {
-                    #Best effort - Try Information from IPMI Sensor Data Respository (SDR)
-                    $esxIpmiSdr = $esxCli.hardware.ipmi.sdr.list.invoke()
-                    $esxPsu = $esxIpmiSdr | Where-Object { $_.Description -match 'Power Supply' -and $_.RawReading -gt 0 } | 
-                    Sort-Object -Unique EntityInstance
-                    $Inventory.'Power Supplies' = $esxPsu.Count
-                } #END if/else
             }
             catch {
                 Write-vDocMessage -Message "Get hardware PSU details, error:" -Type Verbose
                 Write-vDocMessage -Message "$_.Exception.Message" -Type Verbose
             } #END try/catch
+
+            if ($esxPsu) {
+                $Inventory.'Power Supplies' = $esxPsu.Count
+            }
+            else {
+                #Best effort - Try Information from IPMI Sensor Data Respository (SDR)
+                $esxIpmiSdr = $esxCli.hardware.ipmi.sdr.list.invoke()
+                $esxPsu = $esxIpmiSdr | Where-Object { $_.Description -match 'Power Supply' -and $_.RawReading -gt 0 } | 
+                Sort-Object -Unique EntityInstance
+                $Inventory.'Power Supplies' = $esxPsu.Count
+            } #END if/else
         } #END if/else
     } #END PROCESS
 } #END function Get-vDocVMHostHardware
