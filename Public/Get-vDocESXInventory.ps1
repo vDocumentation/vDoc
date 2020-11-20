@@ -10,7 +10,7 @@ function Get-vDocESXInventory {
       File Name    : Get-vDocESXInventory
       Author       : Edgar Sanchez - @edmsanchez13
       Contributor  : Ariel Sanchez - @arielsanchezmor
-      Version      : 0.1.0
+      Version      : 0.2.0
     .Link
       https://github.com/vDocumentation/vDoc
     .OUTPUTS

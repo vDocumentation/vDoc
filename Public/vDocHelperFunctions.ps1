@@ -1709,7 +1709,6 @@ function Get-vDocCimRacFirmwareInventory {
             if ($firmwareCollection.InstanceID.Count -gt 0) {
                 Write-vDocMessage -Message "Gathering Firmware details. Count found: $($firmwareCollection.InstanceID.Count)" -Type Verbose
                 foreach ($firmware in $firmwareCollection) {
-                    $fwOutput = New-Object PSCustomObject
                     Write-vDocMessage -Message "Gathering firmware: $($firmware.ElementName) details..." -Type Verbose
                     
                     #Filter Installed Firmwares only
